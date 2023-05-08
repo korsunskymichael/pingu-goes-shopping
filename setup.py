@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(
-    name='Pingu',
+    name='pingu-goes-shopping',
     version='1',
     packages=[''],
     url='',
