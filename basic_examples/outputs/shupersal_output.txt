@@ -1,0 +1,20 @@
+name: תפוח עץ סמיט ארוז, price: 10.9 , units: לק"ג 
+name: תפוח עץ מוזהב ארוז, price: 10.9 , units: לק"ג 
+name: תפוח עץ סטרקינג ארוז, price: 10.9 , units: לק"ג 
+name: תפוח עץ פינקריספי ארוז, price: 15.9 , units: לק"ג 
+name: תפוח עץ גאלה ארוז, price: 12.9 , units: לק"ג 
+name: תפוח עץ יונתן ארוז, price: 10.9 , units: לק"ג 
+name: תפוח עץ פינקריספי, price: 15.9 , units: לק"ג 
+name: תפוח עץ סמיט, price: 10.9 , units: לק"ג 
+name: תפוח אדמה לבן ארוז, price: 3.9 , units: לק"ג 
+name: תפוח אדמה אדום ארוז, price: 4.9 , units: לק"ג 
+name: תפוח אדמה זני השף, price: 6.9 , units: לק"ג 
+name: תפוח עץ מוזהב, price: 10.9 , units: לק"ג 
+name: תפוח עץ סטרקינג, price: 10.9 , units: לק"ג 
+name: תפוח עץ פינקליידי מארז, price: 16.9 , units: לק"ג 
+name: תפוח עץ גאלה ארוז, price: 10.9 , units: לק"ג 
+name: תפוח עץ סאנדאונר, price: 12.9 , units: לק"ג 
+name: תפוח אדמה גורמה לבן, price: 6.9 , units: לק"ג 
+name: תפוח אדמה לבן בייבי גורמה, price: 6.9 , units: לק"ג 
+name: תפוח אדמה זני השף, price: 6.9 , units: לק"ג 
+name: תפוח אדמה קטן ארוז, price: 6.9 , units: לק"ג 

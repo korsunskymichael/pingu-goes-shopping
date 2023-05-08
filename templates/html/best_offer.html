@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Pricing Comparison Site</title>
+</head>
+<body>
+    <h1>Best 3 offers</h1>
+
+    <ul>
+    {% for offer in offers %}
+        <li>
+            <strong>store: {{ offer.store_name }}</strong>
+            <strong>total price: {{ offer.total_price }}</strong>
+
+        </li>
+
+    {% endfor %}
+    </ul>
+
+    <a href="/home">Home</a>
+</body>
+</html>
