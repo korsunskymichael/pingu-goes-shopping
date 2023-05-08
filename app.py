@@ -63,6 +63,7 @@ def signup():
 
 
 @app.route('/products')
+@login_required
 def products():
     products = get_product_names()
     return render_template('/html/products.html', products=products)
@@ -81,6 +82,7 @@ def add_to_cart():
 
 
 @app.route('/view_cart')
+@login_required
 def view_cart():
     cart = show_cart(user_name=session['user_name'])
     return render_template('/html/cart.html', carts=cart)
@@ -98,6 +100,7 @@ def redirect_home():
 
 
 @app.route('/best_offer')
+@login_required
 def best_offer():
     offers = get_best_offers(user_name=session['user_name'])
     return render_template('/html/best_offer.html', offers=offers)
