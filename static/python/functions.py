@@ -41,6 +41,23 @@ url_suffixes = ['31433c9b-da59-46e5-9671-bcc680957af7']
         return product
 
 """
+
+
+def execute_queries_from_file(file_path):
+    queries_str = open(file_path, 'r').read()
+    queries = queries_str.replace('\n', '').split(';')
+    queries = [query.strip() for query in queries if query != '']
+
+    for q in queries:
+        with sqlite3.connect(DATABASE) as connection:
+            try:
+                cursor = connection.cursor()
+                cursor.execute(q)
+
+            except Exception as e:
+                print(e)
+
+
 def get_product_names():
     with sqlite3.connect(DATABASE) as connection:
         cursor = connection.cursor()
@@ -57,19 +74,19 @@ def get_product_names():
         return products_list
 
 
-def insert_to_cart(buyer_id, product_id, quantity):
+def insert_to_cart(user_name, product_id, quantity):
     with sqlite3.connect(DATABASE) as connection:
         try:
             cursor = connection.cursor()
-            q = "INSERT INTO cart (buyer_id, product_id, quantity) VALUES (?, ?, ?)"
-            cursor.execute(q, (buyer_id, product_id, quantity))
+            q = "INSERT INTO cart (user_name, product_id, quantity) VALUES (?, ?, ?)"
+            cursor.execute(q, (user_name, product_id, quantity))
             connection.commit()
 
         except Exception as e:
             print(e)
 
 
-def show_cart(buyer_id):
+def show_cart(user_name):
     with sqlite3.connect(DATABASE) as connection:
         cursor = connection.cursor()
         cart_list = []
@@ -77,8 +94,8 @@ def show_cart(buyer_id):
             "from products a " \
             "join cart b " \
             "on a.product_id=b.product_id " \
-            "and b.buyer_id='%s'" \
-            "group by a.product_name" % buyer_id
+            "and b.user_name='%s'" \
+            "group by a.product_name" % user_name
 
         try:
             rows = cursor.execute(q)
@@ -90,11 +107,11 @@ def show_cart(buyer_id):
         return cart_list
 
 
-def remove_buyer_products(buyer_id):
+def remove_buyer_products(user_name):
     with sqlite3.connect(DATABASE) as connection:
         try:
             cursor = connection.cursor()
-            q = "DELETE FROM cart WHERE buyer_id='%s'" % buyer_id
+            q = "DELETE FROM cart WHERE user_name='%s'" % user_name
             cursor.execute(q)
             connection.commit()
         except Exception as e:
@@ -112,7 +129,7 @@ def get_three_best_offers(offers):
         return best_offers
 
 
-def get_best_offers(buyer_id):
+def get_best_offers(user_name):
     with sqlite3.connect(DATABASE) as connection:
         cursor = connection.cursor()
         stores_list = []
@@ -121,8 +138,8 @@ def get_best_offers(buyer_id):
             "from stores a " \
             "join cart b " \
             "on a.product_id=b.product_id " \
-            "and b.buyer_id='%s' " \
-            "group by a.store_name" % buyer_id
+            "and b.user_name='%s' " \
+            "group by a.store_name" % user_name
 
         try:
             rows = cursor.execute(q)
@@ -147,25 +164,35 @@ def add_user(user_name: str, user_password: str):
             print(e)
 
 
+def check_auth_user(user_name, user_password):
+    with sqlite3.connect(DATABASE) as connection:
+        cursor = connection.cursor()
+        q = "SELECT user_name from users where user_name='%s' and user_password='%s'" % (user_name, user_password)
+
+        try:
+            rows = cursor.execute(q)           
+            rows_list = [row[0] for row in rows]
+            
+            if len(rows_list) > 0:
+                return True, rows_list[0]
+
+            else:
+                return False, ''
+
+        except Exception as e:
+            print(e)
+
+
 def get_users():
+    """
+    :return: a ste of users' names is returned
+    """
     with sqlite3.connect(DATABASE) as connection:
         try:
             cursor = connection.cursor()
             q = "SELECT user_name FROM users"
             rows = cursor.execute(q)
             return set([r[0] for r in rows])
-        except Exception as e:
-            print(e)
-
-
-def check_username(user_name: str, user_password: str):
-    with sqlite3.connect(DATABASE) as connection:
-        try:
-            cursor = connection.cursor()
-            q = "SELECT * FROM users WHERE user_name='%s' AND user_password='%s'" % (user_name, user_password)
-            rows = cursor.execute(q)
-            rowsList = [row for row in rows]
-            return (len(rowsList) > 0)
         except Exception as e:
             print(e)
 
