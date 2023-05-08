@@ -1,9 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for
 from static.python.functions import *
-from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///pingu.db'
 
 buyer_id = '12358'
 
