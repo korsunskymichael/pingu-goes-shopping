@@ -1,46 +1,76 @@
+from os.path import join
 import sqlite3
+import requests
+import json
+
 
 DATABASE = 'pingu.db'
-"""
-url_suffixes = ['31433c9b-da59-46e5-9671-bcc680957af7']
+
+url_suffixes = ['7333',
+                '3396',
+                '934515',
+                '6701']
+
+stores = ['ויקטורי דיזנגוף',
+          'שופרסל שלי בן יהודה',
+          'מגה דיזינגוף',
+           'am:pm בן יהודה 30']
 
 
-    def __init__(self):
-        self.product_prefix = 'https://zwebapi.zapmarket.co.il/api/models/getModelPage/'
-        self.product_urls = [join(self.product_prefix, product_suffix) for product_suffix in url_suffixes]
+def get_product_dict(url):
+    payload = {"position":[{"lat": "32.0879585",
+                            "lng": "34.7622266",
+                            "addressName": "תל אביב",
+                            "radius": 6}],
+               "cartId": "CartModels/ce30a1b3-ca0b-4499-8288-16cfbb1070b2"}
+
+    r = requests.post(url, verify=False, json=payload)
+    product_dict = json.loads(r.text)
+
+    return product_dict
 
 
-    def get_product_dict(self, url):
-        r = requests.post(url, verify=False)
-        product_dict = json.loads(r.text)
+def parse_product(product_dict):
+    barcode = product_dict.get('barcode', '')
+    product_name = product_dict.get('name', '')
+    product_img = product_dict.get('imgUrl', '')
 
-        return product_dict
+    # insert to products table
+    with sqlite3.connect(DATABASE) as connection:
+        try:
+            cursor = connection.cursor()
+            q = "INSERT INTO products (product_id, product_name, product_image) VALUES (?, ?, ?)"
+            cursor.execute(q, (barcode, product_name, product_img))
+            connection.commit()
+        except Exception as e:
+            print(e)
 
-    def parse_product(self, product_configuration):
-        product_dict = self.get_product_dict()
+    # insert product to stores table
+    stores_from_product_dict = product_dict.get('stores')
 
-        product_configuration['id'] = product_dict.get('id')
-        product_configuration['model_id'] = product_dict.get('', '')
-        product_configuration['barcode'] = product_dict.get('barcode', '')
-        product_configuration['name'] = product_dict.get('name', '')
-        product_configuration['is_weighable'] = product_dict.get('isWeighable', '')
-        product_configuration['min_price'] = product_dict.get('minPrice', '')
-        product_configuration['max_price'] = product_dict.get('maxPrice', '')
-        product_configuration['aisle_id'] = product_dict.get('aisleId', '')
-        product_configuration['cat_id'] = product_dict.get('catId', '')
-        product_configuration['sub_catId'] = product_dict.get('subCatId', '')
-        product_configuration['product_quantity'] = product_dict.get('productQuantity', '')
-        product_configuration['unit_quantity'] = product_dict.get('unitQuantity', '')
-        product_configuration['min_price_per_unit'] = product_dict.get('minPricePerUnit', '')
-        product_configuration['max_price_per_unit'] = product_dict.get('maxPricePerUnit', '')
-        product_configuration['min_unit_of_measure_text'] = product_dict.get('minUnitOfmeasureText', '')
-        product_configuration['min_unit_of_measure_amount'] = product_dict.get('minUnitOfmeasureAmount', '')
+    for store in stores_from_product_dict:
+        store_name = store['name']
 
-        product = Product(product_configuration=product_configuration)
+        if store_name in stores:
+            product_price = store['price']
 
-        return product
+            with sqlite3.connect(DATABASE) as connection:
+                try:
+                    cursor = connection.cursor()
+                    q = "INSERT INTO stores (store_name, product_id, product_price) VALUES (?, ?, ?)"
+                    cursor.execute(q, (store_name, barcode, product_price))
+                    connection.commit()
+                except Exception as e:
+                    print(e)
 
-"""
+
+def update_products_values():
+    product_prefix = 'https://zwebapi.zapmarket.co.il/api/models/getModelPage/'
+    product_urls = [join(product_prefix, product_suffix) for product_suffix in url_suffixes]
+
+    for product_url in product_urls:
+        product_dict = get_product_dict(url=product_url)
+        parse_product(product_dict=product_dict)
 
 
 def execute_queries_from_file(file_path):
@@ -120,7 +150,6 @@ def remove_buyer_products(user_name):
 
 def get_three_best_offers(offers):
     best_offers = sorted(offers, key=lambda x: x['total_price'])
-    print(best_offers)
 
     if len(best_offers) >= 3:
         return best_offers[:3]

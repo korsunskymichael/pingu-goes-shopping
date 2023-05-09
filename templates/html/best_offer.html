@@ -4,20 +4,28 @@
     <title>Pricing Comparison Site</title>
 </head>
 <body>
-    <h1>Best 3 offers</h1>
+    <h1 style="position:relative; left:550px;">:ההצעות הטובות ביותר</h1>
+    <div style="width: 100%;">
+        <div style="width:50%;float:left;">
+            <ul style="position:relative; left:550px;">
+                {% for offer in offers %}
+                    <li>
+                        חנות: {{ offer.store_name }}
+                        </br>
+                        סה"כ: {{ offer.total_price }}
+                    </li>
+                    </br>
 
-    <ul>
-    {% for offer in offers %}
-        <li>
-            <strong>store: {{ offer.store_name }}</strong>
-            <strong>total price: {{ offer.total_price }}</strong>
+                {% endfor %}
+            </ul>
 
-        </li>
-
-    {% endfor %}
-    </ul>
-
-    <a href="/home"><button>Home</button></a>
-    <a href="/logout"><button>Log out</button></a>
+            </br>
+            </br>
+            <a href="/home"><button style="position:relative; left:550px;">חלון מוצרים</button></a>
+            <a href="/logout"><button style="position:relative; left:605px;">התנתקות</button></a>
+        </div>
+        <div style="width: 40%;float:left;">
+                <img src="https://thumbs.dreamstime.com/b/d-academic-penguin-has-been-to-sales-render-sale-bag-42049529.jpg" alt="penguin" width="500" height="600">
+        </div>
 </body>
 </html>

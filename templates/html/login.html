@@ -5,14 +5,16 @@
         <title>Log in</title>
     </head>
     <body>
-        <h1>Please login</h1>
+        <h1>אנא הזן פרטי משתמש</h1>
         <br>
         <form action="/login" method="POST">
-            <input type="text" placeholder="Username" name="username" value="{{request.form.username }}">
-            <input type="password" placeholder="Password" name="password" value="{{request.form.password }}">
-            <input class="btn btn-default" type="submit" value="Log in">
+            <input type="text" placeholder="שם משתמש" name="username" value="{{request.form.username }}">
+            <input type="password" placeholder="ססמא" name="password" value="{{request.form.password }}">
+            <input class="btn btn-default" type="submit" value="חיבור">
         </form>
         </br>
-        <a href="/signup"><button type="button">Sign up</button></a>
+        </br>
+        </br>
+        <a href="/signup"><button type="button">רישום</button></a>
     </body>
 </html>

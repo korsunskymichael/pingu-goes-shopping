@@ -107,7 +107,7 @@ def best_offer():
 
 
 if __name__ == '__main__':
-    execute_queries_from_file('static/sql/db_init.sql')
-    execute_queries_from_file('static/sql/insert_values.sql')
+    execute_queries_from_file(file_path='static/sql/db_init.sql')
+    update_products_values()
 
     app.run(debug=True)

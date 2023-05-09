@@ -4,18 +4,26 @@
     <title>Pricing Comparison Site</title>
 </head>
 <body>
-    <h1>Cart</h1>
-    <ul>
-        {% for cart in carts %}
-            <li>
-                <strong>product name: {{ cart.product_name }}</strong>
-                <strong>quantity: {{ cart.quantity }}</strong>
-            </li>
-        {% endfor %}
-    </ul>
-    <a href="/clear_cart"><button>Clear_cart</button></a>
-    <a href="/best_offer"><button>Best offer</button></a>
-    <a href="/home"><button>Home</button></a>
-    <a href="/logout"><button>Log out</button></a>
+    <h1 style="position:relative; left:110px;">Cart</h1>
+    <div style="width: 100%;">
+        <div style="width:50%;float:left;">
+            <ul style="position:relative; left:120px;">
+                {% for cart in carts %}
+                    <li>
+                        שם מוצר: {{ cart.product_name }}
+                        </br>
+                        כמות: {{ cart.quantity }}
+                    </li>
+                    </br>
+                {% endfor %}
+            </ul>
+            <a href="/clear_cart"><button style="position:relative; left:120px;">ניקוי עגלה</button></a>
+            <a href="/best_offer"><button style="position:relative; left:140px;">קבלת הצעות</button></a>
+            <a href="/home"><button style="position:relative; left:160px;">חלון מוצרים</button></a>
+            <a href="/logout"><button style="position:relative; left:180px;">התנתקות</button></a>
+        </div>
+        <div style="width: 40%;float:left;">
+                <img src="https://thumbs.dreamstime.com/b/funny-cartoon-penguin-winter-illustration-shop-isolated-white-background-vector-207227625.jpg" alt="penguin" width="500" height="600">
+        </div>
 </body>
 </html>
