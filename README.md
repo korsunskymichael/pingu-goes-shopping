@@ -1,1 +1,1 @@
-# pingu-go-shopping
+# pingu-goes-shopping
