@@ -10,8 +10,8 @@
             <img src="https://thumbs.dreamstime.com/b/penguin-shopping-cart-vector-vector-illustration-flat-minimal-vector-eps-file-copy-space-160715074.jpg" alt="penguin" width="500" height="600">
         </div>
         <div style="width:50%;float:left;">
-            <label for="products">בחר מוצרים:</label>
-                <ul>
+            <label for="products" style="position:relative; left:7.2%;"><strong>בחר מוצרים:</strong></label>
+                <ul style="position:relative; left:5%;">
                 {% for product in products %}
                     <li>
                         <strong>{{ product.product_name }}</strong>
