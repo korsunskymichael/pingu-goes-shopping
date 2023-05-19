@@ -4,10 +4,10 @@
     <title>Pricing Comparison Site</title>
 </head>
 <body>
-    <h1 style="position:relative; left:110px;">Cart</h1>
+    <h1 style="position:relative; left:6%;">Cart</h1>
     <div style="width: 100%;">
-        <div style="width:50%;float:left;">
-            <ul style="position:relative; left:120px;">
+        <div style="width:60%;float:left;">
+            <ul style="position:relative; left:12%;">
                 {% for cart in carts %}
                     <li>
                         שם מוצר: {{ cart.product_name }}
@@ -17,13 +17,14 @@
                     </br>
                 {% endfor %}
             </ul>
-            <a href="/clear_cart"><button style="position:relative; left:120px;">ניקוי עגלה</button></a>
-            <a href="/best_offer"><button style="position:relative; left:140px;">קבלת הצעות</button></a>
-            <a href="/home"><button style="position:relative; left:160px;">חלון מוצרים</button></a>
-            <a href="/logout"><button style="position:relative; left:180px;">התנתקות</button></a>
+            <a href="/clear_cart"><button style="position:relative; left:12.5%;">ניקוי עגלה</button></a>
+            <a href="/best_offer"><button style="position:relative; left:14.5%;">קבלת הצעות</button></a>
+            <a href="/home"><button style="position:relative; left:16.5%;">חלון מוצרים</button></a>
+            <a href="/logout"><button style="position:relative; left:18.5%;">התנתקות</button></a>
         </div>
-        <div style="width: 40%;float:left;">
+        <div style="width: 60%;float:left;">
                 <img src="https://thumbs.dreamstime.com/b/funny-cartoon-penguin-winter-illustration-shop-isolated-white-background-vector-207227625.jpg" alt="penguin" width="500" height="600">
         </div>
+    </div>
 </body>
 </html>
