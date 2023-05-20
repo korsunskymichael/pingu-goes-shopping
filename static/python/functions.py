@@ -18,10 +18,10 @@ stores = ['ויקטורי דיזנגוף',
 
 
 def get_product_dict(url):
-    payload = {"position":[{"lat": "32.0879585",
-                            "lng": "34.7622266",
-                            "addressName": "תל אביב",
-                            "radius": 6}],
+    payload = {"position": [{"lat": "32.0879585",
+                             "lng": "34.7622266",
+                             "addressName": "תל אביב",
+                             "radius": 6}],
                "cartId": "CartModels/ce30a1b3-ca0b-4499-8288-16cfbb1070b2"}
 
     r = requests.post(url, verify=False, json=payload)
