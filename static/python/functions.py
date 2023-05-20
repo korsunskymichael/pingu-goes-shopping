@@ -42,6 +42,7 @@ def parse_product(product_dict):
             q = "INSERT INTO products (product_id, product_name, product_image) VALUES (?, ?, ?)"
             cursor.execute(q, (barcode, product_name, product_img))
             connection.commit()
+
         except Exception as e:
             print(e)
 
@@ -60,6 +61,7 @@ def parse_product(product_dict):
                     q = "INSERT INTO stores (store_name, product_id, product_price) VALUES (?, ?, ?)"
                     cursor.execute(q, (store_name, barcode, product_price))
                     connection.commit()
+
                 except Exception as e:
                     print(e)
 
@@ -144,6 +146,7 @@ def remove_buyer_products(user_name):
             q = "DELETE FROM cart WHERE user_name='%s'" % user_name
             cursor.execute(q)
             connection.commit()
+
         except Exception as e:
             print(e)
 
@@ -189,6 +192,7 @@ def add_user(user_name: str, user_password: str):
             q = "INSERT INTO users (user_name, user_password) VALUES (?, ?)"
             cursor.execute(q, (user_name, user_password))
             connection.commit()
+
         except Exception as e:
             print(e)
 
@@ -222,6 +226,7 @@ def get_users():
             q = "SELECT user_name FROM users"
             rows = cursor.execute(q)
             return set([r[0] for r in rows])
+
         except Exception as e:
             print(e)
 
