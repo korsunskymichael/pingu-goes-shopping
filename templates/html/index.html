@@ -1,18 +1,72 @@
 <!DOCTYPE html>
 <html lang="en">
+
     <head>
         <meta charset="UTF-8">
         <title>Main page</title>
+        <link href="/static/css/index_button.css" rel="stylesheet">
+        <style>
+            body {
+                background-image: url("https://wallup.net/wp-content/uploads/2016/01/107957-animals-penguins-ice-cold-iceberg-birds.jpg");
+                background-size: cover;
+                background-repeat: no-repeat;
+                font-family: Arial;
+                margin: 0;
+            }
+            .header {
+                padding: 2%;
+                text-align: center;
+                background: #4d4d4d;
+                color: #e9b800;
+                font-size: 90%;
+            }
+        </style>
     </head>
     <body>
-        <h1>Welcome to Pingu-Goes-Shopping!</h1>
-        <img src="https://thumbs.dreamstime.com/b/d-penguin-has-empty-shopping-trolley-render-45917528.jpg" alt="penguin" width="500" height="600">
+        <div class="header">
+            <h1>Welcome to Pingu-Goes-Shopping!</h1>
+        </div>
         </br>
-        <a href="/login">
-            <button type="button" style="position:relative; left:5%;">התחברות</button>
+        </br>
+        </br>
+        </br>
+        <a href="/login" class="button button--pen" style="position:relative; left:40%;">
+            <div class="button__wrapper">
+                <span class="button__text">התחברות</span>
+            </div>
+            <div class="characterBox">
+                <div class="character wakeup">
+                    <div class="character__face"></div>
+                        <div class="charactor__face2"></div>
+                </div>
+                <div class="character wakeup">
+                    <div class="character__face"></div>
+                        <div class="charactor__face2"></div>
+                </div>
+                <div class="character">
+                    <div class="character__face"></div>
+                        <div class="charactor__face2"></div>
+                </div>
+            </div>
         </a>
-        <a href="/signup">
-            <button type="button" style="position:relative; left:10%;">רישום</button>
+        <a href="/signup" class="button button--pen" style="position:relative; left:40%;">
+            <div class="button__wrapper">
+                <span class="button__text">רישום</span>
+            </div>
+            <div class="characterBox">
+                <div class="character wakeup">
+                    <div class="character__face"></div>
+                        <div class="charactor__face2"></div>
+                </div>
+                <div class="character wakeup">
+                    <div class="character__face"></div>
+                        <div class="charactor__face2"></div>
+                </div>
+                <div class="character">
+                    <div class="character__face"></div>
+                        <div class="charactor__face2"></div>
+                </div>
+            </div>
         </a>
     </body>
 </html>

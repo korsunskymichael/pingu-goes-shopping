@@ -1,233 +1,382 @@
-from os.path import join
-import sqlite3
-import requests
-import json
+import smtplib
+import math
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from static.python.mongo_db import *
+from static.python.secret import *
+
+mongo = Mongo()
+secret = Secret()
 
 
-DATABASE = 'pingu.db'
-
-url_suffixes = ['7333',
-                '3396',
-                '934515',
-                '6701']
-
-stores = ['ויקטורי דיזנגוף',
-          'שופרסל שלי בן יהודה',
-          'מגה דיזינגוף',
-           'am:pm בן יהודה 30']
-
-
-def get_product_dict(url):
-    payload = {"position": [{"lat": "32.0879585",
-                             "lng": "34.7622266",
-                             "addressName": "תל אביב",
-                             "radius": 6}],
-               "cartId": "CartModels/ce30a1b3-ca0b-4499-8288-16cfbb1070b2"}
-
-    r = requests.post(url, verify=False, json=payload)
-    product_dict = json.loads(r.text)
-
-    return product_dict
-
-
-def parse_product(product_dict):
-    barcode = product_dict.get('barcode', '')
-    product_name = product_dict.get('name', '')
-    product_img = product_dict.get('imgUrl', '')
-
-    # insert to products table
-    with sqlite3.connect(DATABASE) as connection:
-        try:
-            cursor = connection.cursor()
-            q = "INSERT INTO products (product_id, product_name, product_image) VALUES (?, ?, ?)"
-            cursor.execute(q, (barcode, product_name, product_img))
-            connection.commit()
-
-        except Exception as e:
-            print(e)
-
-    # insert product to stores table
-    stores_from_product_dict = product_dict.get('stores')
-
-    for store in stores_from_product_dict:
-        store_name = store['name']
-
-        if store_name in stores:
-            product_price = store['price']
-
-            with sqlite3.connect(DATABASE) as connection:
-                try:
-                    cursor = connection.cursor()
-                    q = "INSERT INTO stores (store_name, product_id, product_price) VALUES (?, ?, ?)"
-                    cursor.execute(q, (store_name, barcode, product_price))
-                    connection.commit()
-
-                except Exception as e:
-                    print(e)
-
-
-def update_products_values():
-    product_prefix = 'https://zwebapi.zapmarket.co.il/api/models/getModelPage/'
-    product_urls = [join(product_prefix, product_suffix) for product_suffix in url_suffixes]
-
-    for product_url in product_urls:
-        product_dict = get_product_dict(url=product_url)
-        parse_product(product_dict=product_dict)
-
-
-def execute_queries_from_file(file_path):
-    queries_str = open(file_path, 'r').read()
-    queries = queries_str.replace('\n', '').split(';')
-    queries = [query.strip() for query in queries if query != '']
-
-    for q in queries:
-        with sqlite3.connect(DATABASE) as connection:
-            try:
-                cursor = connection.cursor()
-                cursor.execute(q)
-
-            except Exception as e:
-                print(e)
-
-
-def get_product_names():
-    with sqlite3.connect(DATABASE) as connection:
-        cursor = connection.cursor()
-        products_list = []
-        q = "SELECT product_name, product_id FROM products"
-
-        try:
-            rows = cursor.execute(q)
-            products_list = [{'product_name': r[0], 'product_id': r[1]} for r in rows]
-
-        except Exception as e:
-            print(e)
-
-        return products_list
-
-
-def insert_to_cart(user_name, product_id, quantity):
-    with sqlite3.connect(DATABASE) as connection:
-        try:
-            cursor = connection.cursor()
-            q = "INSERT INTO cart (user_name, product_id, quantity) VALUES (?, ?, ?)"
-            cursor.execute(q, (user_name, product_id, quantity))
-            connection.commit()
-
-        except Exception as e:
-            print(e)
-
-
-def show_cart(user_name):
-    with sqlite3.connect(DATABASE) as connection:
-        cursor = connection.cursor()
-        cart_list = []
-        q = "select a.product_name, sum(b.quantity) " \
-            "from products a " \
-            "join cart b " \
-            "on a.product_id=b.product_id " \
-            "and b.user_name='%s'" \
-            "group by a.product_name" % user_name
-
-        try:
-            rows = cursor.execute(q)
-            cart_list = [{'product_name': r[0], 'quantity': r[1]} for r in rows]
-
-        except Exception as e:
-            print(e)
-
-        return cart_list
-
-
-def remove_buyer_products(user_name):
-    with sqlite3.connect(DATABASE) as connection:
-        try:
-            cursor = connection.cursor()
-            q = "DELETE FROM cart WHERE user_name='%s'" % user_name
-            cursor.execute(q)
-            connection.commit()
-
-        except Exception as e:
-            print(e)
-
-
-def get_three_best_offers(offers):
-    best_offers = sorted(offers, key=lambda x: x['total_price'])
-
-    if len(best_offers) >= 3:
-        return best_offers[:3]
-
-    else:
-        return best_offers
-
-
-def get_best_offers(user_name):
-    with sqlite3.connect(DATABASE) as connection:
-        cursor = connection.cursor()
-        stores_list = []
-
-        q = "select a.store_name, sum(a.product_price) " \
-            "from stores a " \
-            "join cart b " \
-            "on a.product_id=b.product_id " \
-            "and b.user_name='%s' " \
-            "group by a.store_name" % user_name
-
-        try:
-            rows = cursor.execute(q)
-            stores_list = [{'store_name': r[0], 'total_price': r[1]} for r in rows]
-
-        except Exception as e:
-            print(e)
-
-        best_offers = get_three_best_offers(stores_list)
-
-        return best_offers
-
-
+##################################################################################
+# login and signup functions
+##################################################################################
 def add_user(user_name: str, user_password: str):
-    with sqlite3.connect(DATABASE) as connection:
-        try:
-            cursor = connection.cursor()
-            q = "INSERT INTO users (user_name, user_password) VALUES (?, ?)"
-            cursor.execute(q, (user_name, user_password))
-            connection.commit()
+    try:
+        encrypted_password = secret.encrypt_password(password=user_password)
 
-        except Exception as e:
-            print(e)
+        q = {"user_name": user_name,
+             "password": encrypted_password
+             }
 
+        mongo.insert_to_db(collection_name="users",
+                           query_dict=q)
 
-def check_auth_user(user_name, user_password):
-    with sqlite3.connect(DATABASE) as connection:
-        cursor = connection.cursor()
-        q = "SELECT user_name from users where user_name='%s' and user_password='%s'" % (user_name, user_password)
-
-        try:
-            rows = cursor.execute(q)           
-            rows_list = [row[0] for row in rows]
-            
-            if len(rows_list) > 0:
-                return True, rows_list[0]
-
-            else:
-                return False, ''
-
-        except Exception as e:
-            print(e)
+    except Exception as e:
+        print(e)
 
 
 def get_users():
-    """
-    :return: a ste of users' names is returned
-    """
-    with sqlite3.connect(DATABASE) as connection:
-        try:
-            cursor = connection.cursor()
-            q = "SELECT user_name FROM users"
-            rows = cursor.execute(q)
-            return set([r[0] for r in rows])
+    try:
+        q = {"_id": 0,
+             "user_name": 1}
 
-        except Exception as e:
-            print(e)
+        docs = mongo.select_from_db(collection_name="users",
+                                    query_dict=q)
+
+        return [r["user_name"] for r in docs]
+
+    except Exception as e:
+        print(e)
+
+
+def check_auth_user(user_name, user_password):
+    try:
+        password = get_user_password(user_name=user_name)
+
+        if password == user_password:
+            return True, user_name
+
+        else:
+            return False, ''
+
+    except Exception as e:
+        print(e)
+
+
+def get_user_password(user_name):
+    try:
+        q = {"user_name": user_name}
+
+        docs = mongo.select_from_db(collection_name="users",
+                                    query_dict=q)
+
+        docs_list = [secret.decrypt_password(encrypted_password=r["password"]) for r in docs]
+
+        if len(docs_list) > 0:
+            return docs_list[0]
+
+        else:
+            return ''
+
+    except Exception as e:
+        print(e)
+
+
+def send_password_recovery(user_name, password):
+    sender_email = 'pingugoesshopping@gmail.com'
+    sender_password = 'ibtlmqsvqojybqvn'
+
+    smtp_server = "smtp.gmail.com"
+    smtp_port = 587
+
+    msg = MIMEMultipart()
+    msg['Subject'] = "Hey! we found your password "
+    msg.attach(MIMEText(f"password: {password}"))
+
+    mail = smtplib.SMTP(host=smtp_server,
+                        port=smtp_port)
+
+    mail.starttls()
+
+    mail.login(user=sender_email,
+               password=sender_password)
+
+    mail.sendmail(from_addr=sender_email,
+                  to_addrs=[user_name],
+                  msg=msg.as_string())
+
+    mail.quit()
+
+
+##################################################################################
+# products functions
+##################################################################################
+def get_products_by_region(region_id):
+    try:
+        q = {"region_id": region_id}
+
+        products = mongo.select_from_db(collection_name="products",
+                                        query_dict=q)
+        products_data = {}
+
+        for product in products:
+            category = product['category_name']
+            if category not in products_data:
+                products_data[category] = []
+
+            product_dict = {"product_id": product["product_id"],
+                            "product_name": product["product_name"],
+                            "barcode": product.get("barcode", ""),
+                            "product_img": product["product_img"]
+                            }
+            products_data[category].append(product_dict)
+
+        return products_data
+
+    except Exception as e:
+        print(e)
+
+
+def insert_to_cart(user_name, product_id, region_id, quantity):
+    try:
+        q1 = {"user_name": user_name,
+              "product_id": product_id,
+              "region_id": region_id}
+
+        docs = mongo.select_from_db(collection_name="carts",
+                                    query_dict=q1)
+
+        docs_list = [r for r in docs]
+
+        if len(docs_list) > 0:
+            q3 = {'$inc': {'quantity': int(quantity)}}
+
+            mongo.update_db(collection_name="carts",
+                            filter_query_dict=q1,
+                            update_query_dict=q3)
+
+        else:
+            q3 = {"user_name": user_name,
+                  "product_id": product_id,
+                  "region_id": region_id,
+                  "quantity": int(quantity)}
+
+            mongo.insert_to_db(collection_name="carts",
+                               query_dict=q3)
+
+    except Exception as e:
+        print(e)
+
+
+def find_product_by_barcode(region_id, barcode):
+    try:
+        q = {"region_id": region_id,
+             "barcode": barcode}
+
+        products = mongo.select_from_db(collection_name="products",
+                                        query_dict=q)
+
+        if len(products) > 0:
+            barcode_data = [{"product_id": products[0]["product_id"],
+                             "product_name": products[0]["product_name"],
+                             "barcode": products[0].get("barcode", ""),
+                             "product_img": products[0]["product_img"]
+                             }]
+
+        else:
+            barcode_data = []
+
+        return barcode_data
+
+    except Exception as e:
+        print(e)
+
+
+##################################################################################
+# cart functions
+##################################################################################
+def remove_buyer_products(user_name):
+    try:
+        q = {"user_name": user_name
+             }
+
+        mongo.delete_from_db(collection_name="carts",
+                             query_dict=q)
+
+    except Exception as e:
+        print(e)
+
+
+def show_cart(user_name, region_id):
+    try:
+        q1 = {"user_name": user_name}
+
+        docs = mongo.select_from_db(collection_name="carts",
+                                    query_dict=q1)
+
+        cart_list = [{'product_id': r['product_id'], 'quantity': r['quantity']} for r in docs]
+        cart_list_fixed = []
+
+        for item in cart_list:
+            product_id = item['product_id']
+
+            q2 = {"product_id": product_id,
+                  "region_id": region_id}
+
+            docs2 = mongo.select_from_db(collection_name="products",
+                                         query_dict=q2)
+
+            for doc in docs2:
+                item['product_name'] = doc['product_name']
+                item['product_img'] = doc['product_img']
+
+                cart_list_fixed.append(item)
+
+        products_list = []
+
+        if len(cart_list_fixed) > 0:
+            for cart in cart_list_fixed:
+                product_id = cart["product_id"]
+
+                aggreagate = [
+                        {'$match': {
+                                'product_id': product_id,
+                                'region_id': region_id
+                                 }
+                         },
+                        {
+                            '$project': {
+                                'product_name': 1,
+                                'product_id': 1,
+                                'product_img': 1,
+                                'stores': {
+                                    '$filter': {
+                                        'input': '$stores',
+                                        'as': 'store',
+                                        'cond': {
+                                            '$ne': [
+                                                '$$store.price', 0
+                                            ]
+                                        }
+                                    }
+                                }
+                            }
+                         },
+                        {
+                            '$unwind': '$stores'
+                         },
+                        {
+                            '$sort': {
+                                'stores.price': 1
+                                 }
+                        },
+                        {
+                            '$group': {
+                                '_id': {
+                                    'product_name': '$product_name',
+                                    'product_id': '$product_id',
+                                    'product_img': '$product_img'
+                                },
+                                'stores': {
+                                    '$push': '$stores'
+                                }
+                            }
+                        },
+                        {
+                            '$project': {
+                                '_id': 0,
+                                'product_name': '$_id.product_name',
+                                'product_id': '$_id.product_id',
+                                'product_img': '$_id.product_img',
+                                'stores': 1
+                                 }
+                        }
+                ]
+
+                result = mongo.aggregate_from_db(collection_name="products",
+                                                 query_list=aggreagate)
+
+                products_list.append(result)
+
+            # Create a set to store the store names from the first item in the list
+            common_stores = set(products_list[0][0]['stores'][i]['store_name'] for i in range(len(products_list[0][0]['stores'])))
+
+            # Iterate over the remaining items and keep only the common stores
+            for item in products_list[1:]:
+                stores = item[0]['stores']
+                common_stores.intersection_update(store['store_name'] for store in stores)
+
+            # Replace original stores items with the remaining one (max 10 stores)
+            for item in products_list:
+                stores = item[0]['stores']
+                remaining_stores = []
+
+                for store_item in stores:
+                    if store_item['store_name'] in common_stores:
+                        remaining_stores.append(store_item)
+
+                remaining_stores = sorted(remaining_stores, key=lambda x: x['price'])
+
+                if len(remaining_stores) > 10:
+                    remaining_stores = remaining_stores[:10]
+
+                item[0]['stores'] = remaining_stores
+
+            store_total_cost = {}
+
+            # Calculate the total cost for each store in the input list based on the quantity from the cart
+            for cart_item in cart_list:
+                product_id = cart_item['product_id']
+                quantity = cart_item['quantity']
+
+                for product in products_list:
+                    for item in product:
+                        if item['product_id'] == product_id:
+                            stores = item['stores']
+                            for store in stores:
+                                store_name = store['store_name']
+                                price = store['price']
+                                if store_name in store_total_cost:
+                                    store_total_cost[store_name] += price * quantity
+                                else:
+                                    store_total_cost[store_name] = price * quantity
+
+            # Create the list of dictionaries containing store name and total cost
+            offers = [{'store_name': store, 'total_cost': "%.2f" % ((math.ceil(store_total_cost[store] * 100))/100)} for store
+                      in store_total_cost]
+
+            offers = sorted(offers, key=lambda x: x['total_cost'])
+
+        else:
+            offers = []
+
+        return cart_list_fixed, offers
+
+    except Exception as e:
+        print(e)
+
+
+def update_cart_product(user_name, product_id, region_id, new_quantity):
+    q1 = {"user_name": user_name,
+          "product_id": product_id,
+          "region_id": region_id}
+
+    docs = mongo.select_from_db(collection_name="carts",
+                                query_dict=q1)
+
+    docs_list = [r for r in docs]
+
+    if len(docs_list) > 0:
+        q3 = {'$set': {'quantity': int(new_quantity)}}
+
+        mongo.update_db(collection_name="carts",
+                        filter_query_dict=q1,
+                        update_query_dict=q3)
+
+
+def remove_cart_product(user_name, product_id, region_id,):
+    try:
+        q = {"user_name": user_name,
+             "product_id": product_id,
+             "region_id": region_id}
+
+        mongo.delete_from_db(collection_name="carts",
+                             query_dict=q)
+
+    except Exception as e:
+        print(e)
+
 
 

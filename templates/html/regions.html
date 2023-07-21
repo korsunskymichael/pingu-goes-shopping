@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>pingu's regions</title>
+        <link rel="stylesheet" href="/static/css/style.css">
+    </head>
+    <body>
+        <div class="header">
+            <h1>אזורי קניה</h1>
+            <div class="topnav">
+            <a class="active" href="/regions">אזורי קניה</a>
+            <a href="/logout">התנתקות</a>
+        </div>
+        </div>
+        </br>
+        <div class="img"  style="position:relative; left:20%; ">
+            <img src="https://th.bing.com/th/id/R.384a723dcecf319b7b26a2cf57da2d20?rik=8GffpRtYEUP%2fwQ&pid=ImgRaw&r=0" width="350px" height="280px" >
+            <img src="https://thepulse.co.il/images/stories/tech/high_tech/moshavastdium%20490x200.jpg" width="350px" height="280px" >
+            <img src="https://i.ytimg.com/vi/4yLY11N2Q88/maxresdefault.jpg" width="350px" height="280px" >
+        </div>
+        <div class="row" style="position:relative; left:47%; ">
+
+            </br>
+            </br>
+            <form method="POST" action="/products">
+                <label for="region"></label>
+                <h2>בחר אזור</h2>
+                <select id="region" name="region">
+                    <option value="tel aviv">תל אביב</option>
+                    <option value="petah tikva">פתח תקווה</option>
+                    <option value="netivot">נתיבות</option>
+                </select>
+                </br>
+                </br>
+                <button type="submit" id="btn-color">הצג מוצרים</button>
+            </form>
+        </div>
+    </body>
+</html>

@@ -2,19 +2,95 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8">
-        <title>Sign up</title>
+        <title>pingu's sign up</title>
+        <style>
+            body {
+                background-image: url("https://wallup.net/wp-content/uploads/2016/01/107957-animals-penguins-ice-cold-iceberg-birds.jpg");
+                background-size: cover;
+                background-repeat: no-repeat;
+                font-family: Arial;
+                margin: 0;
+            }
+            .header {
+                padding: 2%;
+                text-align: center;
+                background: #4d4d4d;
+                color: #e9b800;
+                font-size: 90%;
+            }
+            .btn-color{
+                background-color: #0e1c36;
+                color: #fff;
+
+            }
+
+            .profile-image-pic{
+                height: 35%;
+                width: 15%;
+                object-fit: cover;
+            }
+
+            .alert {
+                padding: 20px;
+                background-color: #f44336;
+                color: white;
+            }
+
+            .closebtn {
+                margin-left: 15px;
+                color: white;
+                font-weight: bold;
+                float: right;
+                font-size: 22px;
+                line-height: 20px;
+                cursor: pointer;
+                transition: 0.3s;
+            }
+
+            .closebtn:hover {
+                color: black;
+            }
+        </style>
     </head>
     <body>
-        <h1>אנא בצע רישום</h1>
+        <div class="header">
+            <h1>אנא הזן פרטי משתמש</h1>
+        </div>
         <br>
-        <form action="/signup" method="POST">
-            <input type="text" placeholder="שם משתמש" name="username" value="{{request.form.username }}">
-            <input type="password" placeholder="ססמא" name="password" value="{{request.form.password }}">
-            <input class="btn btn-default" type="submit" value="רישום">
-        </form>
-        </br>
-        </br>
-        </br>
-        <a href="/login"><button type="button">חיבור</button></a>
-  </body>
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="alert">
+                    {% for message in messages %}
+                        {% set message_text = message %}
+                        <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
+                        <p style="position:relative; left:42%;">{{ message_text }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+        <br>
+        <div class="row" style="position:relative; left:43%;">
+            <div class="col-md-6 offset-md-3">
+                <div class="card my-5">
+                    <form action="/signup" method="POST">
+                        <div class="text-center">
+                            <img src="https://cdn.pixabay.com/photo/2016/03/31/19/56/avatar-1295397__340.png" class="img-fluid profile-image-pic img-thumbnail rounded-circle my-3" width="200px" alt="profile">
+                        </div>
+                        <div class="mb-3">
+                            <input type="text" id="username" name="username" aria-describedby="emailHelp" placeholder="אימייל" value="{{request.form.username }}">
+                        </div>
+                        </br>
+                        <div class="mb-3">
+                        <input type="password" id="password" name="password" placeholder="סיסמא" value="{{request.form.password }}">
+                        </div>
+                        </br>
+                        <div class="text-center"><button type="submit" class="btn btn-color px-5 mb-5 w-100">רישום</button></div>
+                        </br>
+                        <div id="emailHelp" class="form-text text-center mb-5 text-dark">נזכרת בפרטי משתמש?  <a href="/login" class="text-dark fw-bold">בצע התחברות </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </body>
 </html>

@@ -1,9 +1,10 @@
-from flask import Flask, render_template, request, redirect, url_for, session
-from static.python.functions import *
 import functools
+from flask import Flask, render_template, request, redirect, url_for, session, flash
+from static.python.functions import *
+from static.python.configs import *
 
 app = Flask(__name__)
-app.secret_key = '12358'
+app.secret_key = app_secret_key
 
 
 def login_required(view):
@@ -11,37 +12,65 @@ def login_required(view):
     def wrapped_view(*args, **kwargs):
         if 'user_name' not in session:
             return redirect('/')
+
         return view(*args, **kwargs)
+
     return wrapped_view
 
 
 @app.route('/')
 def index():
-    return render_template("/html/index.html")
+    return render_template(template_name_or_list="/html/index.html")
 
 
-@app.route('/logout')
+@app.route(rule='/logout')
 def logout():
+    user_name = session['user_name']
+    remove_buyer_products(user_name=user_name)
+
     # Clear the session data
     session.clear()
-    return redirect(url_for('index'))
+
+    return redirect(location=url_for(endpoint='index'))
 
 
-@app.route('/login', methods=['GET', 'POST'])
+@app.route(rule='/login', methods=['GET', 'POST'])
 def login():
     if request.method == "POST":
         user_name = request.form["username"]
         user_password = request.form["password"]
-        valid_user, user_name = check_auth_user(user_name, user_password)
+        valid_user, user_name = check_auth_user(user_name=user_name,
+                                                user_password=user_password)
 
         if valid_user:
             session['user_name'] = user_name
-            return redirect(url_for("products"))
-        else:
-            print("incorrect user or password")
-            return redirect(url_for("login"))
 
-    return render_template("/html/login.html")
+            return redirect(location=url_for(endpoint="show_regions"))
+
+        else:
+            flash(message="שגיאה בחיבור, אנא הזן שם משתמש וסיסמא נכונים!")
+
+            return redirect(location=url_for(endpoint="login"))
+
+    return render_template(template_name_or_list="/html/login.html")
+
+
+@app.route(rule='/password_recovery', methods=['POST'])
+def password_recovery():
+    if request.method == "POST":
+        user_name = request.form["recovery_username"]
+
+        password = get_user_password(user_name=user_name)
+
+        if password != '':
+            send_password_recovery(user_name=user_name,
+                                   password=password)
+
+        else:
+            flash(message="לא נמצא שם משתמש, אנא הזן שם משתמש תקין!")
+            return redirect(location=url_for(endpoint="login"))
+
+    return redirect(location=url_for(endpoint="login"))
 
 
 @app.route('/signup', methods=["POST", "GET"])
@@ -51,63 +80,157 @@ def signup():
         user_password = request.form["password"]
         usernames = get_users()
 
-        if user_name not in usernames:
-            add_user(user_name, user_password)
-            return redirect(url_for("login"))
-        
-        else:
-            print("user name already exist")
-            return redirect(url_for("signup"))
+        for mail_suffix in allowed_mail_suffixes:
+            if user_name.endswith(mail_suffix) is True:
+                if user_name not in usernames:
+                    add_user(user_name=user_name,
+                             user_password=user_password)
 
-    return render_template('/html/signup.html')
+                    return redirect(location=url_for(endpoint="login"))
+
+                else:
+                    flash(message="השם משתמש שהוזן כבר קיים במערכת, אנא הזן שם משתמש שונה!")
+                    return redirect(location=url_for(endpoint="signup"))
+
+        flash(message=" 'gmail.com' או 'walla.co.il' סיומת מייל לא תקנית, סיומות מייל אפשריות הן  ")
+        return redirect(location=url_for(endpoint="signup"))
+
+    return render_template(template_name_or_list='/html/signup.html')
 
 
-@app.route('/products')
+@app.route('/regions', methods=['POST', 'GET'])
+@login_required
+def show_regions():
+    user_name = session['user_name']
+    remove_buyer_products(user_name=user_name)
+
+    return render_template(template_name_or_list="/html/regions.html")
+
+
+@app.route('/products', methods=['POST', 'GET'])
 @login_required
 def products():
-    products = get_product_names()
-    return render_template('/html/products.html', products=products)
+    region = request.form.get('region', '')
+
+    if region != '':
+        session['chosen_region'] = region
+
+    else:
+        region = session['chosen_region']
+
+    region_id = regions[region]
+
+    products_data = get_products_by_region(region_id=region_id)
+
+    return render_template(template_name_or_list='/html/products.html',
+                           products_data=products_data,
+                           barcode_data=[])
+
+
+@app.route('/close_barcode', methods=['POST', 'GET'])
+def close_barcode_window():
+    if request.method == "POST":
+        region = session['chosen_region']
+        region_id = regions[region]
+
+        products_data = get_products_by_region(region_id=region_id)
+
+        return render_template(template_name_or_list='/html/products.html',
+                               products_data=products_data,
+                               barcode_data=[])
+
+
+@app.route('/search_barcode', methods=['POST', 'GET'])
+@login_required
+def find_product():
+    barcode = request.form.get('barcode', '')
+
+    if barcode != '':
+        region = session['chosen_region']
+
+        region_id = regions[region]
+
+        products_data = get_products_by_region(region_id=region_id)
+        barcode_data = find_product_by_barcode(region_id=region_id,
+                                               barcode=barcode)
+
+        if len(barcode_data) > 0:
+
+            return render_template(template_name_or_list='/html/products.html',
+                                   products_data=products_data,
+                                   barcode_data=barcode_data)
+
+        else:
+            flash("ברקוד לא תקין, אנא נסה שנית!")
+            return render_template(template_name_or_list='/html/products.html',
+                                   products_data=products_data,
+                                   barcode_data=[])
 
 
 @app.route('/add_to_cart', methods=['POST'])
 def add_to_cart():
     product_id = request.form.get('product_id')
     quantity = request.form.get('quantity')
+    user_name = session['user_name']
+    region_id = regions[session['chosen_region']]
 
-    insert_to_cart(user_name=session['user_name'],
+    insert_to_cart(user_name=user_name,
                    product_id=product_id,
+                   region_id=region_id,
                    quantity=quantity)
 
-    return redirect(url_for('products'))
+    return redirect(location=url_for(endpoint='products'))
 
 
 @app.route('/view_cart')
 @login_required
 def view_cart():
-    cart = show_cart(user_name=session['user_name'])
-    return render_template('/html/cart.html', carts=cart)
+    user_name = session['user_name']
+    region_id = regions[session['chosen_region']]
+
+    cart_list, offers = show_cart(user_name=user_name,
+                                  region_id=region_id)
+
+    return render_template(template_name_or_list='/html/cart.html',
+                           cart_list=cart_list,
+                           offers=offers)
 
 
 @app.route('/clear_cart')
 def clear_cart():
     remove_buyer_products(user_name=session['user_name'])
-    return redirect(url_for('products'))
+    return redirect(location=url_for(endpoint='products'))
 
 
-@app.route('/home')
-def redirect_home():
-    return redirect(url_for('products'))
+@app.route('/update_cart_product', methods=['POST'])
+def update_product_quantity():
+    if request.method == "POST":
+        product_id = request.form.get('product_id')
+        new_quantity = request.form.get('quantity')
+        user_name = session['user_name']
+        region_id = regions[session['chosen_region']]
+
+        update_cart_product(user_name=user_name,
+                            product_id=product_id,
+                            region_id=region_id,
+                            new_quantity=new_quantity)
+
+        return redirect(location=url_for(endpoint='view_cart'))
 
 
-@app.route('/best_offer')
-@login_required
-def best_offer():
-    offers = get_best_offers(user_name=session['user_name'])
-    return render_template('/html/best_offer.html', offers=offers)
+@app.route('/delete_cart_product', methods=['POST'])
+def remove_product_from_cart():
+    if request.method == "POST":
+        product_id = request.form.get('product_id')
+        user_name = session['user_name']
+        region_id = regions[session['chosen_region']]
+
+        remove_cart_product(user_name=user_name,
+                            product_id=product_id,
+                            region_id=region_id)
+
+        return redirect(location=url_for(endpoint='view_cart'))
 
 
 if __name__ == '__main__':
-    execute_queries_from_file(file_path='static/sql/db_init.sql')
-    update_products_values()
-
     app.run(debug=True)

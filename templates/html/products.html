@@ -1,35 +1,111 @@
 <!DOCTYPE html>
-<html>
 <head>
-    <title>Pricing Comparison Site</title>
+    <title>pingu's products</title>
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.min.css">
+    <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
-    <h1>מוצרים</h1>
-    <div style="width: 100%;">
-        <div style="width: 40%;float:left;">
-            <img src="https://thumbs.dreamstime.com/b/penguin-shopping-cart-vector-vector-illustration-flat-minimal-vector-eps-file-copy-space-160715074.jpg" alt="penguin" width="500" height="600">
+    <div class="content">
+        <div class="header">
+            <h1>מוצרים</h1>
+            <div class="topnav">
+                <a class="active" href="/products">מוצרים</a>
+                <a href="/view_cart">עגלת הקניות</a>
+                <a href="/regions">אזור קניה</a>
+                <a href="/logout">התנתקות</a>
+                <form action="/search_barcode" onsubmit="return validateForm()" method="POST">
+                    <input type="text" name="barcode" id="inputField" placeholder="... הזן ברקוד">
+                    <button class="search_button" type="submit" id="btn-color_3" disabled>חפש</button>
+                </form>
+            </div>
         </div>
-        <div style="width:50%;float:left;">
-            <label for="products" style="position:relative; left:7.2%;"><strong>בחר מוצרים:</strong></label>
-                <ul style="position:relative; left:5%;">
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="alert">
+                    {% for message in messages %}
+                        {% set message_text = message %}
+                        <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
+                        <p style="position:relative; left:42%;">{{ message_text }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+        {% if barcode_data %}
+        <div class="barcode">
+            <div class="category_style">
+                <h2 class="category-title"><u>ברקוד</u></h2>
+            </div>
+            {% for product in barcode_data %}
+            <li>
+                <form action="/add_to_cart" method="POST">
+                    <p>{{ product.product_name }}</p>
+                    <img src="{{ product.product_img }}" name="product_img" style="position:relative;" alt="profile">
+                    </br>
+                    <input type="hidden" name="product_id" value="{{ product.product_id }}">
+                    <label for="quantity">כמות:</label>
+                    <input type="number" class="quantity" name="quantity" min="1" value="1">
+                    <button type="submit" class="btn-color">הוספה לעגלה</button>
+                </form>
+                </br>
+                <form action="/close_barcode" method="POST">
+                    <button type="submit" class="btn-color">סגירת חלון</button>
+                </form>
+            </li>
+            </br>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% for category, products in products_data.items() %}
+        <div class="category">
+            <div class="category_style">
+                <h2 class="category-title">{{ category }}</h2>
+            </div>
+            <div class="carousel">
                 {% for product in products %}
+                <div class="product">
                     <li>
-                        <strong>{{ product.product_name }}</strong>
-                            <form action="/add_to_cart" method="POST">
-                                <input type="hidden" name="product_id" value="{{ product.product_id }}">
-                                <label for="quantity">כמות:</label>
-                                <input type="number" id="quantity" name="quantity" min="1" value="1">
-                                <button type="submit">הוספה לעגלה</button>
-                            </form>
+                        <p>{{ product.product_name }}</p>
+                        <form action="/add_to_cart" method="POST">
+                            <img src="{{ product.product_img }}" name="product_img" style="position:relative; left:40%; " alt="profile">
+                            </br>
+                            <input type="hidden" name="product_id" value="{{ product.product_id }}">
+                            <label for="quantity">כמות:</label>
+                            <input type="number" id="quantity" name="quantity" min="1" value="1">
+                            <button type="submit" id="btn-color">הוספה לעגלה</button>
+                        </form>
                     </li>
                     </br>
-
+                </div>
                 {% endfor %}
-                </ul>
-
-            <a href="/view_cart"><button style="position:relative; left:11%;">לעגלה</button></a>
-            <a href="/logout"><button style="position:relative; left:13%;">התנתקות</button></a>
+            </div>
         </div>
+        {% endfor %}
     </div>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('.carousel').slick({
+                slidesToShow: 4,
+                slidesToScroll: 1,
+                autoplay: true,
+                autoplaySpeed: 5000,
+            });
+        });
+
+        function validateForm() {
+            var inputField = document.getElementById("inputField").value;
+            if (inputField.trim() === "") {
+                alert("Please enter some input.");
+                return false;
+            }
+            return true;
+        }
+
+        document.getElementById("inputField").addEventListener("input", function() {
+            var submitButton = document.getElementById("btn-color_3");
+            submitButton.disabled = this.value.trim() === "";
+        });
+    </script>
 </body>
 </html>

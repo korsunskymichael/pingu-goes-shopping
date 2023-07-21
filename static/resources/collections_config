@@ -1,0 +1,28 @@
+users = {
+    user_name, -- unique email
+    user_password
+)
+
+
+products = {
+    product_id, -- unique primary key
+    product_name,
+    site_id,
+    category_id, -- primary key
+    category_name,
+    store_name,
+    region_id, --primary key
+    region_name,
+    product_price,
+    product_image
+}
+
+
+carts = {
+    user_name,
+    product_id,
+    region_id,
+    quantity
+}
+
+

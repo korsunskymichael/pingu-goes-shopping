@@ -2,19 +2,131 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8">
-        <title>Log in</title>
+        <title>pingu's log in</title>
+        <style>
+            body {
+                background-image: url("https://wallup.net/wp-content/uploads/2016/01/107957-animals-penguins-ice-cold-iceberg-birds.jpg");
+                background-size: cover;
+                background-repeat: no-repeat;
+                font-family: Arial;
+                margin: 0;
+            }
+
+            .header {
+                padding: 2%;
+                text-align: center;
+                background: #4d4d4d;
+                color: #e9b800;
+                font-size: 90%;
+            }
+
+            .btn-color{
+                background-color: #0e1c36;
+                color: #fff;
+
+            }
+
+            .profile-image-pic{
+                height: 35%;
+                width: 15%;
+                object-fit: cover;
+            }
+
+            .dropdown {
+                position: relative;
+                display: inline-block;
+            }
+
+            .dropdown-content {
+                display: none;
+                position: absolute;
+                background-color: #f9f9f9;
+                min-width: 160px;
+                box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+                padding: 12px 16px;
+                z-index: 1;
+            }
+
+            .dropdown:hover .dropdown-content {
+                display: block;
+            }
+
+            .alert {
+                padding: 20px;
+                background-color: #f44336;
+                color: white;
+            }
+
+            .closebtn {
+                margin-left: 15px;
+                color: white;
+                font-weight: bold;
+                float: right;
+                font-size: 22px;
+                line-height: 20px;
+                cursor: pointer;
+                transition: 0.3s;
+            }
+
+            .closebtn:hover {
+                color: black;
+            }
+        </style>
     </head>
     <body>
-        <h1>אנא הזן פרטי משתמש</h1>
+        <div class="header">
+            <h1>אנא הזן פרטי משתמש</h1>
+            <div class="dropdown">
+                <span style="position:relative; right:550%;">שחזור סיסמא
+                    <div class="dropdown-content">
+                        <form action="/password_recovery" method="POST">
+                            <p>אנא הזן שם משתמש:</p>
+                            <div class="mb-3">
+                                <input type="text" id="recovery_username" name="recovery_username" aria-describedby="emailHelp" placeholder="אימייל" value="{{request.form.recovery_username }}">
+                            </div>
+                            </br>
+                                <div class="text-center"><button type="submit" class="btn-color px-5 mb-5 w-100">שליחה</button></div>
+                            </br>
+                        </form>
+                    </div>
+                </span>
+            </div>
+        </div>
         <br>
-        <form action="/login" method="POST">
-            <input type="text" placeholder="שם משתמש" name="username" value="{{request.form.username }}">
-            <input type="password" placeholder="ססמא" name="password" value="{{request.form.password }}">
-            <input class="btn btn-default" type="submit" value="חיבור">
-        </form>
-        </br>
-        </br>
-        </br>
-        <a href="/signup"><button type="button">רישום</button></a>
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="alert">
+                    {% for message in messages %}
+                        {% set message_text = message %}
+                        <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
+                        <p style="position:relative; left:42%;">{{ message_text }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+        <br>
+        <div class="row" style="position:relative; left:43%;">
+            <div class="col-md-6 offset-md-3">
+                <div class="card my-5">
+                    <form action="/login" method="POST">
+                        <div class="text-center">
+                            <img src="https://cdn.pixabay.com/photo/2016/03/31/19/56/avatar-1295397__340.png" class="img-fluid profile-image-pic img-thumbnail rounded-circle my-3" width="200px" alt="profile">
+                        </div>
+                        <div class="mb-3">
+                            <input type="text" id="username" name="username" aria-describedby="emailHelp" placeholder="אימייל" value="{{request.form.username }}">
+                        </div>
+                        </br>
+                        <div class="mb-3">
+                        <input type="password" id="password" name="password" placeholder="סיסמא" value="{{request.form.password }}">
+                        </div>
+                        </br>
+                        <div class="text-center"><button type="submit" class="btn btn-color px-5 mb-5 w-100">התחברות</button></div>
+                        </br>
+                        <div id="emailHelp" class="form-text text-center mb-5 text-dark">עדין לא רשום?  <a href="/signup" class="text-dark fw-bold">בצע רישום </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
     </body>
 </html>
