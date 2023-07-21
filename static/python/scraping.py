@@ -3,7 +3,7 @@ import requests
 import json
 import random
 import time
-from configs import *
+from static.python.configs import *
 from static.python.mongo_db import *
 
 
