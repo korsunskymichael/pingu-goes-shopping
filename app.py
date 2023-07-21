@@ -234,4 +234,5 @@ def remove_product_from_cart():
 
 if __name__ == '__main__':
     app.run(debug=True)
-    # app.run(host='0.0.0.0', port=81, debug=True) # to run in replit.com
+    # app.run(host='0.0.0.0', port=81, debug=True) # to run in replit.com,
+    # also change the name of file to main.py if you are using replit.com
