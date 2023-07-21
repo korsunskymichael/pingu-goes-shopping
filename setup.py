@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='pingu-goes-shopping',
-    version='1',
+    version='2',
     packages=[''],
     url='',
     license='',
