@@ -7,20 +7,20 @@ app = Flask(__name__)
 app.secret_key = app_secret_key
 
 
+@app.route('/index')
+def index():
+    return render_template(template_name_or_list="/html/index.html")
+
+
 def login_required(view):
     @functools.wraps(view)
     def wrapped_view(*args, **kwargs):
         if 'user_name' not in session:
-            return redirect('/')
+            return redirect('/index')
 
         return view(*args, **kwargs)
 
     return wrapped_view
-
-
-@app.route('/')
-def index():
-    return render_template(template_name_or_list="/html/index.html")
 
 
 @app.route(rule='/logout')
