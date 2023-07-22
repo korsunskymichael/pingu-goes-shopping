@@ -78,7 +78,7 @@ def signup():
     if request.method == "POST":
         user_name = request.form['username']
         user_password = request.form["password"]
-        exists = check_if_user_exists
+        exists = check_if_user_exists(user_name=user_name)
 
         for mail_suffix in allowed_mail_suffixes:
             if user_name.endswith(mail_suffix) is True:
