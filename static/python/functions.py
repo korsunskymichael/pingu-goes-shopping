@@ -27,15 +27,14 @@ def add_user(user_name: str, user_password: str):
         print(e)
 
 
-def get_users():
+def check_if_user_exists(user_name):
     try:
-        q = {"_id": 0,
-             "user_name": 1}
+        q = {"user_name": user_name}
 
         docs = mongo.select_from_db(collection_name="users",
                                     query_dict=q)
 
-        return [r["user_name"] for r in docs]
+        return len([r["user_name"] for r in docs]) > 0
 
     except Exception as e:
         print(e)
@@ -309,9 +308,6 @@ def show_cart(user_name, region_id):
 
                 remaining_stores = sorted(remaining_stores, key=lambda x: x['price'])
 
-                if len(remaining_stores) > 10:
-                    remaining_stores = remaining_stores[:10]
-
                 item[0]['stores'] = remaining_stores
 
             store_total_cost = {}
@@ -338,6 +334,7 @@ def show_cart(user_name, region_id):
                       in store_total_cost]
 
             offers = sorted(offers, key=lambda x: x['total_cost'])
+            offers = offers[:10]
 
         else:
             offers = []
