@@ -1,10 +1,10 @@
 from cryptography.fernet import Fernet
-from static.python.credentials import cipher_key
+import os
 
 
 class Secret:
     def __init__(self):
-        self.cipher = Fernet(cipher_key)
+        self.cipher = Fernet(os.environ.get("CIPHER_KEY"))
 
     def decrypt_password(self, encrypted_password):
         decrypted_password = self.cipher.decrypt(encrypted_password)

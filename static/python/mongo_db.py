@@ -1,10 +1,10 @@
-from static.python.credentials import mongo_connection_address
 import pymongo
+import os
 
 
 class Mongo:
     def __init__(self):
-        self.client = pymongo.MongoClient(mongo_connection_address)
+        self.client = pymongo.MongoClient(os.environ.get("MONGO_CONNECTION_ADDRESS"))
         self.db = self.client["pingu-shop"]
 
     def insert_to_db(self, collection_name, query_dict):
