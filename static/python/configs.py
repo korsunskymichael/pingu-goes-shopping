@@ -71,9 +71,5 @@ categories = {"fruits_vegetables": {"category_id": "1",
 
 allowed_mail_suffixes = ["@gmail.com", "@walla.co.il"]
 
-app_secret_key = '12358'
 
-cipher_key = b'widGvVVhNP7IlyanlsoVAcFTNb7XAvPhRxAEaQftSgA='
-# to generate a new key use:
-# key = Fernet.generate_key()
 

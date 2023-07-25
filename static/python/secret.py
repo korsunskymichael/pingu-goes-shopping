@@ -1,5 +1,5 @@
 from cryptography.fernet import Fernet
-from static.python.configs import *
+from static.python.credentials import cipher_key
 
 
 class Secret:
@@ -14,6 +14,5 @@ class Secret:
     def encrypt_password(self, password):
         message = password.encode()
         encrypted_password = self.cipher.encrypt(message)
-        #print(encrypted_password.decode())
 
         return encrypted_password.decode()

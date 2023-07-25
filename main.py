@@ -2,6 +2,7 @@ import functools
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 from static.python.functions import *
 from static.python.configs import *
+from static.python.credentials import app_secret_key
 
 app = Flask(__name__)
 app.secret_key = app_secret_key
