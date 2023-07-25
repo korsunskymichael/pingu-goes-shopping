@@ -1,0 +1,15 @@
+name: Run Python Script
+
+env:
+  APP_SECRET_KEY: ${{ secrets.APP_SECRET_KEY }}
+  CIPHER_KEY: ${{ secrets.CIPHER_KEY }}
+  MONGO_CONNECTION_ADDRESS: ${{ secrets.MONGO_CONNECTION_ADDRESS }}
+
+Jobs:
+  run-python:
+    runs-on: windows-latest
+    steps: |
+      - name: Run Python Script
+        python main.py
+
+
