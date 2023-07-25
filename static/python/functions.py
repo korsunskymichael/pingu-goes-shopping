@@ -4,6 +4,7 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from static.python.mongo_db import *
 from static.python.secret import *
+from static.python.configs import allowed_mail_suffixes
 
 mongo = Mongo()
 secret = Secret()
@@ -42,10 +43,13 @@ def check_if_user_exists(user_name):
 
 def check_auth_user(user_name, user_password):
     try:
-        password = get_user_password(user_name=user_name)
+        if " or " not in user_name.lower() and " and " not in user_name.lower() \
+                and "=" not in user_name and ((user_name.endswith(allowed_mail_suffixes[0]) is True)
+                                              or (user_name.endswith(allowed_mail_suffixes[0]) is True)):
+            password = get_user_password(user_name=user_name)
 
-        if password == user_password:
-            return True, user_name
+            if password == user_password:
+                return True, user_name
 
         else:
             return False, ''
