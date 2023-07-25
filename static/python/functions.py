@@ -3,7 +3,7 @@ import math
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from static.python.mongo_db import *
-from static.python.secret import *
+from static.python.secret import Secret
 from static.python.configs import allowed_mail_suffixes
 
 mongo = Mongo()
