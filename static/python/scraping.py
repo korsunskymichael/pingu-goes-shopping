@@ -46,25 +46,51 @@ def get_site_ids():
 
 
 def parse_product(product_dict, region_id, category_name, site_id):
-    stores_from_product_dict = product_dict.get('stores')
-    collection_name = "products"
+    try:
+        stores_from_product_dict = product_dict.get('stores')
+        collection_name = "products"
 
-    stores = [{"store_name": store['name'], "price": store['price']} for store in stores_from_product_dict]
+        stores = [{"store_name": store['name'], "price": store['price']} for store in stores_from_product_dict]
 
-    parsed_product_dict = {
-        "barcode": product_dict.get('barcode', ''),
-        "product_name": product_dict.get('name'),
-        "product_id": site_id,
-        "category_id": categories[category_name]["category_id"],
-        "category_name": categories[category_name]["translated_name"],
-        "stores": stores,
-        "region_id": region_id,
-        "region_name": regions_payloads[region_id]["payload"]["position"][0]["addressName"],
-        "product_img": product_dict.get('imgUrl', '')
-    }
+        q1 = {"product_id": site_id,
+              "region_id": region_id}
 
-    mongo.insert_to_db(collection_name=collection_name,
-                       query_dict=parsed_product_dict)
+        docs = mongo.select_from_db(collection_name="products",
+                                    query_dict=q1)
+
+        docs_list = [r for r in docs]
+
+        if len(docs_list) > 0:
+            q2 = {'$set': {"barcode": product_dict.get('barcode', ''),
+                           "product_name": product_dict.get('name'),
+                           "category_id": categories[category_name]["category_id"],
+                           "category_name": categories[category_name]["translated_name"],
+                           "stores": stores,
+                           "region_name": regions_payloads[region_id]["payload"]["position"][0]["addressName"],
+                           "product_img": product_dict.get('imgUrl', '')}}
+
+            mongo.update_db(collection_name=collection_name,
+                            filter_query_dict=q1,
+                            update_query_dict=q2)
+
+        else:
+            q3 = {
+                "barcode": product_dict.get('barcode', ''),
+                "product_name": product_dict.get('name'),
+                "product_id": site_id,
+                "category_id": categories[category_name]["category_id"],
+                "category_name": categories[category_name]["translated_name"],
+                "stores": stores,
+                "region_id": region_id,
+                "region_name": regions_payloads[region_id]["payload"]["position"][0]["addressName"],
+                "product_img": product_dict.get('imgUrl', '')
+            }
+
+            mongo.insert_to_db(collection_name=collection_name,
+                               query_dict=q3)
+
+    except Exception as e:
+        print(e)
 
 
 def get_parsed_products(site_id, category_name):
@@ -84,7 +110,6 @@ def get_parsed_products(site_id, category_name):
 
 
 if __name__ == '__main__':
-
     get_site_ids()
     fixed_site_ids = []
 
@@ -98,5 +123,3 @@ if __name__ == '__main__':
 
         get_parsed_products(site_id=site_id,
                             category_name=category_name)
-
-

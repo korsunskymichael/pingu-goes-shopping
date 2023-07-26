@@ -350,21 +350,25 @@ def show_cart(user_name, region_id):
 
 
 def update_cart_product(user_name, product_id, region_id, new_quantity):
-    q1 = {"user_name": user_name,
-          "product_id": product_id,
-          "region_id": region_id}
+    try:
+        q1 = {"user_name": user_name,
+              "product_id": product_id,
+              "region_id": region_id}
 
-    docs = mongo.select_from_db(collection_name="carts",
-                                query_dict=q1)
+        docs = mongo.select_from_db(collection_name="carts",
+                                    query_dict=q1)
 
-    docs_list = [r for r in docs]
+        docs_list = [r for r in docs]
 
-    if len(docs_list) > 0:
-        q3 = {'$set': {'quantity': int(new_quantity)}}
+        if len(docs_list) > 0:
+            q3 = {'$set': {'quantity': int(new_quantity)}}
 
-        mongo.update_db(collection_name="carts",
-                        filter_query_dict=q1,
-                        update_query_dict=q3)
+            mongo.update_db(collection_name="carts",
+                            filter_query_dict=q1,
+                            update_query_dict=q3)
+
+    except Exception as e:
+        print(e)
 
 
 def remove_cart_product(user_name, product_id, region_id,):
