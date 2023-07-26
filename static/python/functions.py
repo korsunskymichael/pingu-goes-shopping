@@ -2,7 +2,7 @@ import smtplib
 import math
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-from static.python.mongo_db import *
+from static.python.mongo_db import Mongo
 from static.python.secret import Secret
 from static.python.configs import allowed_mail_suffixes
 
