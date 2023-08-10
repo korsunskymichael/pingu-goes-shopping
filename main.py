@@ -85,10 +85,15 @@ def signup():
         for mail_suffix in allowed_mail_suffixes:
             if user_name.endswith(mail_suffix) is True:
                 if exists is False:
-                    add_user(user_name=user_name,
-                             user_password=user_password)
+                    if user_password != '':
+                        add_user(user_name=user_name,
+                                 user_password=user_password)
 
-                    return redirect(location=url_for(endpoint="login"))
+                        return redirect(location=url_for(endpoint="login"))
+
+                    else:
+                        flash(message="אנא הזן סיסמא לא ריקה")
+                        return redirect(location=url_for(endpoint="signup"))
 
                 else:
                     flash(message="השם משתמש שהוזן כבר קיים במערכת, אנא הזן שם משתמש שונה!")
